@@ -1,0 +1,23 @@
+{
+  "dca": {
+    "intervalHours": 24,
+    "maxAmountUsdc": 50,
+    "sourceToken": "USDC",
+    "targetToken": "ETH",
+    "chain": "ethereum",
+    "slippageBps": 100,
+    "dryRun": true
+  },
+  "ledger": {
+    "useSpeculos": true,
+    "speculos": {
+      "apiPort": 5000,
+      "apduPort": 9999
+    },
+    "derivationPath": "44'/60'/0'/0/0"
+  },
+  "market": {
+    "priceApi": "coingecko",
+    "refreshIntervalMs": 60000
+  }
+}

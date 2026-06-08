@@ -1,0 +1,47 @@
+{
+  "name": "ledger-agent-treasury",
+  "version": "1.0.0",
+  "description": "AI-powered treasury agent with Ledger hardware-enforced signing — built for the Build & Show with the Ledger Agent Stack competition",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "lint": "tsc --noEmit",
+    "speculos": "chmod +x ./run-speculos.sh && bash ./run-speculos.sh --docker",
+    "account:discover": "tsx src/index.ts discover",
+    "balances": "tsx src/index.ts balances",
+    "send": "tsx src/index.ts send",
+    "check": "tsx src/index.ts genuine-check"
+  },
+  "keywords": [
+    "ledger",
+    "agent",
+    "hardware-wallet",
+    "web3",
+    "blockchain"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@ledgerhq/context-module": "^2.1.0",
+    "@ledgerhq/device-management-kit": "^1.5.1",
+    "@ledgerhq/device-signer-kit-ethereum": "^1.16.0",
+    "@ledgerhq/device-transport-kit-node-hid": "^1.0.1",
+    "@ledgerhq/device-transport-kit-speculos": "^1.2.1",
+    "cors": "^2.8.6",
+    "ethers": "^6.16.0",
+    "express": "^5.2.1",
+    "node-cron": "^4.2.1",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.9.2",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  }
+}

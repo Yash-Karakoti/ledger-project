@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-ledger-black text-gray-100 font-sans;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-ledger-accent hover:bg-orange-500 text-white font-medium py-2 px-4 rounded transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-ledger-gray hover:bg-ledger-gray-light text-gray-200 font-medium py-2 px-4 rounded transition-all duration-200 border border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .card {
+    @apply bg-ledger-dark border border-ledger-gray rounded-xl p-5;
+  }
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-green {
+    @apply badge bg-green-900/50 text-green-400 border border-green-700;
+  }
+  .badge-red {
+    @apply badge bg-red-900/50 text-red-400 border border-red-700;
+  }
+  .badge-yellow {
+    @apply badge bg-yellow-900/50 text-yellow-400 border border-yellow-700;
+  }
+  .badge-blue {
+    @apply badge bg-blue-900/50 text-blue-400 border border-blue-700;
+  }
+  .log-info {
+    @apply text-blue-300;
+  }
+  .log-success {
+    @apply text-green-300;
+  }
+  .log-warn {
+    @apply text-yellow-300;
+  }
+  .log-error {
+    @apply text-red-400;
+  }
+}
+
+/* Terminal-style log scrollbar */
+.log-container::-webkit-scrollbar {
+  width: 6px;
+}
+.log-container::-webkit-scrollbar-track {
+  background: #1a1a2e;
+}
+.log-container::-webkit-scrollbar-thumb {
+  background: #3d3d4d;
+  border-radius: 3px;
+}
+
+/* Animated pulse for active status */
+.status-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
