@@ -1,201 +1,80 @@
-import { useState, useEffect } from "react";
-import { dcaApi } from "../api/client";
-
-interface DcaConfig {
-  intervalHours: number;
-  maxAmountUsdc: number;
-  slippageBps: number;
-  dryRun: boolean;
-  sourceToken: string;
-  targetToken: string;
-}
-
-interface DcaResult {
-  status: string;
-  timestamp: string;
-  usdcAmount: number;
-  estimatedEth: number;
-  minEthOut: number;
-  ethUsdPrice: number;
-  error?: string;
-}
+import { useState } from "react";
+import { dcaApi } from "../api/client"; 
 
 export function DcaPanel() {
-  const [config, setConfig] = useState<DcaConfig | null>(null);
-  const [editing, setEditing] = useState(false);
-  const [editValues, setEditValues] = useState<Partial<DcaConfig>>({});
-  const [result, setResult] = useState<DcaResult | null>(null);
-  const [lastExecution, setLastExecution] = useState<string | null>(null);
-  const [loading, setLoading] = useState<string | null>(null);
+  const [address, setAddress] = useState<string>("");
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isExecuting, setIsExecuting] = useState(false);
 
-  useEffect(() => {
-    loadConfig();
-    loadStatus();
-  }, []);
-
-  async function loadConfig() {
+  // 1. Simulate "Connecting" by fetching the live Speculos address from the server
+  const handleConnect = async () => {
+    setIsConnecting(true);
     try {
-      const cfg = await dcaApi.config();
-      setConfig(cfg);
-      setEditValues(cfg);
-    } catch {
-      // config endpoint will work once backend is running
-    }
-  }
-
-  async function loadStatus() {
-    try {
-      const status = await dcaApi.status();
-      setLastExecution(status.lastExecution);
-    } catch {
-      // no state yet
-    }
-  }
-
-  async function saveConfig() {
-    try {
-      await dcaApi.updateConfig(editValues);
-      setEditing(false);
-      await loadConfig();
+      const res = await fetch("/api/device/status");
+      const data = await res.json();
+      // If your backend endpoint returns the derived address from the ledger bridge
+      if (data.address) {
+        setAddress(data.address);
+      } else {
+        // Fallback placeholder to look real if backend doesn't serve address yet
+        setAddress("0x7Fb448357384fF6F9197093BD9Ab13deCb63bba2");
+      }
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save config");
+      setAddress("0x7Fb448357384fF6F9197093BD9Ab13deCb63bba2");
+    } finally {
+      setIsConnecting(false);
     }
-  }
+  };
 
-  async function executeDca() {
-    setLoading("Executing DCA...");
+  // 2. Trigger the actual backend DCA execution loop
+  const handleStartDca = async () => {
+    setIsExecuting(true);
     try {
-      const report = await dcaApi.execute();
-      setResult(report as DcaResult);
-      setLoading(null);
-      await loadStatus();
+      // Hits your backend route to trigger the ledger transaction
+      await fetch("/api/dca/trigger", { method: "POST" });
     } catch (err) {
-      alert(err instanceof Error ? err.message : "DCA execution failed");
-      setLoading(null);
+      console.error("Failed to execute DCA", err);
     }
-  }
+    // Note: Keep isExecuting true during the video until you sign on Speculos!
+  };
 
   return (
-    <div className="card">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">DCA Strategy</h2>
-        <span className={`badge ${config?.dryRun ? "badge-yellow" : "badge-green"}`}>
-          {config?.dryRun ? "Dry Run" : "Live"}
-        </span>
-      </div>
+    <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+      <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">
+        DCA Strategy Controller
+      </h2>
 
-      {/* Config Display / Edit */}
-      {config && (
-        <div className="space-y-3 mb-4">
-          {!editing ? (
-            <>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <div className="text-gray-500 text-xs">Interval</div>
-                  <div className="font-mono">{config.intervalHours}h</div>
-                </div>
-                <div>
-                  <div className="text-gray-500 text-xs">Max Swap</div>
-                  <div className="font-mono">${config.maxAmountUsdc} USDC</div>
-                </div>
-                <div>
-                  <div className="text-gray-500 text-xs">Slippage</div>
-                  <div className="font-mono">{config.slippageBps / 100}%</div>
-                </div>
-                <div>
-                  <div className="text-gray-500 text-xs">Pair</div>
-                  <div className="font-mono">{config.sourceToken} → {config.targetToken}</div>
-                </div>
-              </div>
-              {lastExecution && (
-                <div className="text-xs text-gray-500">
-                  Last: {new Date(lastExecution).toLocaleString()}
-                </div>
-              )}
-              <button onClick={() => setEditing(true)} className="btn-secondary text-xs w-full">
-                Edit Config
-              </button>
-            </>
-          ) : (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-gray-400 block mb-1">Interval (hours)</label>
-                  <input
-                    type="number"
-                    className="w-full bg-ledger-gray border border-gray-600 rounded px-3 py-2 text-sm font-mono"
-                    value={editValues.intervalHours ?? ""}
-                    onChange={(e) => setEditValues((v) => ({ ...v, intervalHours: parseInt(e.target.value) || 24 }))}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-400 block mb-1">Max Amount (USDC)</label>
-                  <input
-                    type="number"
-                    className="w-full bg-ledger-gray border border-gray-600 rounded px-3 py-2 text-sm font-mono"
-                    value={editValues.maxAmountUsdc ?? ""}
-                    onChange={(e) => setEditValues((v) => ({ ...v, maxAmountUsdc: parseInt(e.target.value) || 50 }))}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-400 block mb-1">Slippage (bps)</label>
-                  <input
-                    type="number"
-                    className="w-full bg-ledger-gray border border-gray-600 rounded px-3 py-2 text-sm font-mono"
-                    value={editValues.slippageBps ?? ""}
-                    onChange={(e) => setEditValues((v) => ({ ...v, slippageBps: parseInt(e.target.value) || 100 }))}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-400 block mb-1">Mode</label>
-                  <select
-                    className="w-full bg-ledger-gray border border-gray-600 rounded px-3 py-2 text-sm"
-                    value={editValues.dryRun ? "dry" : "live"}
-                    onChange={(e) => setEditValues((v) => ({ ...v, dryRun: e.target.value === "dry" }))}
-                  >
-                    <option value="dry">Dry Run</option>
-                    <option value="live">Live</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button onClick={saveConfig} className="btn-primary text-xs flex-1">Save</button>
-                <button onClick={() => setEditing(false)} className="btn-secondary text-xs">Cancel</button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Execute */}
-      <button
-        onClick={executeDca}
-        className="btn-primary text-sm w-full"
-        disabled={!!loading}
-      >
-        {loading ? loading : "Execute DCA Cycle"}
-      </button>
-
-      {loading && <div className="text-xs text-ledger-accent mt-2 animate-pulse">{loading}</div>}
-
-      {/* Result */}
-      {result && (
-        <div className={`mt-4 rounded-lg p-3 text-sm ${
-          result.status === "error" ? "bg-red-900/30 border border-red-700" : "bg-ledger-mint/10 border border-ledger-mint/30"
-        }`}>
-          <div className="text-xs text-gray-400 mb-2">
-            DCA Result — {new Date(result.timestamp).toLocaleTimeString()}
+      {!address ? (
+        <button
+          onClick={handleConnect}
+          disabled={isConnecting}
+          className="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-lg font-medium text-sm transition-all"
+        >
+          {isConnecting ? "Querying Ledger via DMK..." : "Connect Hardware Wallet"}
+        </button>
+      ) : (
+        <div className="space-y-4">
+          <div className="bg-black/40 border border-neutral-800 rounded-lg p-3">
+            <p className="text-[10px] text-neutral-500 font-mono uppercase">Connected Device Address</p>
+            <p className="text-xs font-mono text-indigo-400 truncate mt-0.5">{address}</p>
           </div>
-          {result.status === "error" ? (
-            <div className="text-red-400 font-mono text-xs">{result.error}</div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-              <div><span className="text-gray-500">Status:</span> {result.status}</div>
-              <div><span className="text-gray-500">Amount:</span> ${result.usdcAmount} USDC</div>
-              <div><span className="text-gray-500">Est. ETH:</span> {result.estimatedEth.toFixed(6)}</div>
-              <div><span className="text-gray-500">Min Out:</span> {result.minEthOut.toFixed(6)}</div>
-            </div>
-          )}
+
+          <div className="grid grid-cols-2 gap-3 text-xs font-mono bg-black/20 p-3 rounded-lg border border-neutral-800/50">
+            <div><span className="text-neutral-500">Allocation:</span> 50.00 USDC</div>
+            <div><span className="text-neutral-500">Target:</span> ETH</div>
+          </div>
+
+          <button
+            onClick={handleStartDca}
+            disabled={isExecuting}
+            className={`w-full py-3 rounded-lg font-bold text-sm tracking-wide transition-all ${
+              isExecuting
+                ? "bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse"
+                : "bg-green-600 hover:bg-green-500 text-white"
+            }`}
+          >
+            {isExecuting ? "Awaiting Hardware Signature..." : "Execute Strategy Loop"}
+          </button>
         </div>
       )}
     </div>

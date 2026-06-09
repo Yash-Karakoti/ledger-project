@@ -35,7 +35,10 @@ const isSuccessCommandResult: (result: unknown) => boolean = _dmk.isSuccessComma
 
 // Transport & signer exports
 const speculosTransportFactory: (...args: unknown[]) => unknown = _speculos.speculosTransportFactory;
+const speculosIdentifier: string = _speculos.speculosIdentifier || "Speculos"; // Fallback just in case
+
 const nodeHidTransportFactory: unknown = _nodeHid.nodeHidTransportFactory;
+const nodeHidIdentifier: string = _nodeHid.nodeHidIdentifier || "NODE-HID";
 const SignerEthBuilder: new (args: Record<string, unknown>) => { build: () => Record<string, unknown> } = _signerEth.SignerEthBuilder;
 
 export interface DeviceInfo {
@@ -76,15 +79,22 @@ export class LedgerBridge {
   }
 
   /**
-   * Discover and connect to a Ledger device.
+   * Discover and connect to a Ledger device (Node/CLI pattern).
    */
   async discoverAndConnect(): Promise<DeviceInfo> {
     console.log("\n[LedgerBridge] 🔍 Discovering Ledger device...");
 
     try {
-      const device = await firstValueFrom(
-        this.dmk.startDiscovering({ transport: this.config.ledger.useSpeculos ? "SPECULOS" : "NODE-HID" }),
-      ) as { id: string; name?: string };
+      // In Node.js/CLI contexts, we use listenToAvailableDevices instead of startDiscovering
+      const devices = await firstValueFrom(
+        this.dmk.listenToAvailableDevices({}).pipe(
+          filter((list: unknown) => Array.isArray(list) && list.length > 0),
+          take(1),
+          timeout(10000) // 10 second timeout
+        ),
+      ) as Array<{ id: string; name?: string; transport: string }>;
+
+      const device = devices[0];
 
       console.log(`[LedgerBridge] ✅ Device found: ${device.name ?? "Ledger Device"} (ID: ${device.id})`);
 
@@ -101,7 +111,7 @@ export class LedgerBridge {
       console.error("[LedgerBridge] ❌ Failed to discover/connect:", error);
       throw new Error(
         "Could not connect to Ledger device. " +
-        "Ensure Speculos is running (or device is plugged in and unlocked).",
+        "Ensure Speculos is running in Docker (or device is plugged in).",
       );
     }
   }

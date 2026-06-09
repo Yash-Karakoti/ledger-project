@@ -6,7 +6,7 @@
     "targetToken": "ETH",
     "chain": "ethereum",
     "slippageBps": 100,
-    "dryRun": true
+    "dryRun": false
   },
   "ledger": {
     "useSpeculos": true,

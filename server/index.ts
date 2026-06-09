@@ -71,3 +71,24 @@ app.listen(PORT, () => {
   console.log(`  Dashboard: http://localhost:${PORT} (when frontend is built)`);
   console.log(`═══════════════════════════════════════\n`);
 });
+
+import { Router } from "express";
+import { runDcaCycle } from "../server/routes/dca.ts"; // Adjust path to your dca file
+import { logStore } from "../services/log-store";
+
+const router = Router();
+
+router.post("/trigger", async (req, res) => {
+  // Respond immediately so frontend doesn't hang on the HTTP request
+  res.status(200).json({ status: "processing" });
+
+  try {
+    logStore.add("info", "api", "DCA loop triggered manually from Command Center UI.");
+    // Run your existing script execution function
+    await runDcaCycle(); 
+  } catch (error: any) {
+    logStore.add("error", "dca", `Execution failed: ${error.message}`);
+  }
+});
+
+export default router;
