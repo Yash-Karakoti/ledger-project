@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "tsx src/index.ts",
+    "dev": "tsx server/index.ts",
     "lint": "tsc --noEmit",
     "speculos": "chmod +x ./run-speculos.sh && bash ./run-speculos.sh --docker",
     "account:discover": "tsx src/index.ts discover",
