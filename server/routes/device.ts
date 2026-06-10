@@ -10,7 +10,8 @@ const router = Router();
 
 let bridge: LedgerBridge | null = null;
 
-function getBridge(): LedgerBridge {
+// FIXED: Exporting this function so dca.ts can use the active connection
+export function getBridge(): LedgerBridge {
   if (!bridge) bridge = new LedgerBridge();
   return bridge;
 }
@@ -20,13 +21,20 @@ function getBridge(): LedgerBridge {
  * Returns the current device configuration and connection status.
  */
 router.get("/status", (_req: Request, res: Response) => {
-  const config = loadConfig();
-  res.json({
-    useSpeculos: config.ledger.useSpeculos,
-    speculosPort: config.ledger.speculos.apiPort,
-    derivationPath: config.ledger.derivationPath,
-    connected: false, // Will be updated after discovery
-  });
+  try {
+    const config = loadConfig();
+    res.json({
+      useSpeculos: config.ledger.useSpeculos,
+      speculosPort: config.ledger.speculos.apiPort,
+      derivationPath: config.ledger.derivationPath,
+      connected: false, // Will be updated after discovery
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      success: false, 
+      error: "Failed to load configuration on the server." 
+    });
+  }
 });
 
 /**

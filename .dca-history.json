@@ -1,0 +1,53 @@
+[
+  {
+    "id": "dca-1781029038129-wlie",
+    "timestamp": "2026-06-09T18:17:18.128Z",
+    "status": "skipped",
+    "usdcAmount": 50,
+    "estimatedEth": 0,
+    "minEthOut": 0,
+    "ethUsdPrice": 0,
+    "error": "Interval not yet elapsed",
+    "dryRun": false,
+    "ethAccumulated": 0,
+    "usdcSpent": 0
+  },
+  {
+    "id": "dca-1781092036070-q57u",
+    "timestamp": "2026-06-10T11:47:16.068Z",
+    "status": "dry-run",
+    "usdcAmount": 20,
+    "estimatedEth": 0.012354678098862135,
+    "minEthOut": 0.012231131317873513,
+    "ethUsdPrice": 1618.82,
+    "dryRun": true,
+    "ethAccumulated": 0.012354678098862135,
+    "usdcSpent": 20
+  },
+  {
+    "id": "dca-1781092331167-gyg0",
+    "timestamp": "2026-06-10T11:52:11.167Z",
+    "status": "skipped",
+    "usdcAmount": 50,
+    "estimatedEth": 0,
+    "minEthOut": 0,
+    "ethUsdPrice": 0,
+    "error": "Interval not yet elapsed",
+    "dryRun": false,
+    "ethAccumulated": 0.012354678098862135,
+    "usdcSpent": 20
+  },
+  {
+    "id": "dca-1781096511753-cqz0",
+    "timestamp": "2026-06-10T13:01:51.752Z",
+    "status": "executed",
+    "usdcAmount": 50,
+    "estimatedEth": 0.030571129847816916,
+    "minEthOut": 0.030265418549338747,
+    "ethUsdPrice": 1635.53,
+    "txHash": "0x00e546ce977c170c827a2091b0c1540490162f9a216879be4ce1647564d7832e",
+    "dryRun": false,
+    "ethAccumulated": 0.04292580794667905,
+    "usdcSpent": 70
+  }
+]

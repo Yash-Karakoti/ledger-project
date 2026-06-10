@@ -4,12 +4,19 @@
 
 import { Router, type Request, type Response } from "express";
 import { readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { executeDca } from "../../src/strategies/dca.js";
 import { loadConfig } from "../../src/utils/config.js";
 import { recordExecution, getHistory } from "../services/dca-history.js";
+// FIXED: Import getBridge to access the active Ledger session
+import { getBridge } from "./device.js";
 
 const router = Router();
+
+// Safely resolve directory paths
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * GET /api/dca/config
@@ -29,7 +36,8 @@ router.get("/config", (_req: Request, res: Response) => {
  */
 router.put("/config", (req: Request, res: Response) => {
   try {
-    const configPath = resolve(process.cwd(), "config", "settings.json");
+    // FIXED: Use absolute pathing to prevent 500 errors
+    const configPath = resolve(__dirname, "..", "..", "config", "settings.json");
     const current = JSON.parse(readFileSync(configPath, "utf-8"));
 
     const updates = req.body;
@@ -54,7 +62,9 @@ router.put("/config", (req: Request, res: Response) => {
  */
 router.post("/execute", async (_req: Request, res: Response) => {
   try {
-    const report = await executeDca();
+    // FIXED: Get the active Ledger bridge and force execution (bypass time lock)
+    const bridge = getBridge();
+    const report = await executeDca(bridge, true);
 
     const persisted = recordExecution({
       timestamp: report.timestamp,
@@ -106,7 +116,8 @@ router.get("/history", (_req: Request, res: Response) => {
  */
 router.get("/status", (_req: Request, res: Response) => {
   try {
-    const stateFile = resolve(process.cwd(), ".dca-state.json");
+    // FIXED: Use absolute pathing here as well
+    const stateFile = resolve(__dirname, "..", "..", ".dca-state.json");
     const state = JSON.parse(readFileSync(stateFile, "utf-8"));
     res.json({ success: true, ...state });
   } catch {

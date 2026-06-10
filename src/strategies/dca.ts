@@ -78,8 +78,9 @@ function validateSwap(settings: DcaSettings): { valid: boolean; reason?: string 
 /**
  * Execute a single DCA cycle.
  * NOTE: We now pass the active LedgerBridge instance into this function.
+ * FIXED: Added `force = false` to allow the frontend to bypass the interval lock.
  */
-export async function executeDca(bridge?: LedgerBridge): Promise<DcaExecutionReport> {
+export async function executeDca(bridge?: LedgerBridge, force = false): Promise<DcaExecutionReport> {
   const config = loadConfig();
   const settings = config.dca;
 
@@ -105,7 +106,8 @@ export async function executeDca(bridge?: LedgerBridge): Promise<DcaExecutionRep
   }
 
   // Step 2: Check interval
-  const intervalOk = shouldExecute(settings.intervalHours);
+  // FIXED: If force is true, we skip the time lock
+  const intervalOk = force || shouldExecute(settings.intervalHours);
   if (!intervalOk) {
     const report: DcaExecutionReport = {
       timestamp: new Date().toISOString(),

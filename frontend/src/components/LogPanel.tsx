@@ -11,21 +11,27 @@ interface LogEntry {
 export function LogPanel() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [autoScroll, setAutoScroll] = useState(true);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  
+  // 1. We change the ref to target the scrollable container, not a bottom element
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
-  // Poll backend for live logs
   useEffect(() => {
     fetchLogs();
-    intervalRef.current = setInterval(fetchLogs, 1500); // Slightly faster polling for the video demo
+    intervalRef.current = setInterval(fetchLogs, 1500); 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
 
+  // 2. We use container.scrollTo() to STRICTLY trap the scroll inside the terminal
   useEffect(() => {
-    if (autoScroll) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (autoScroll && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth",
+      });
     }
   }, [logs, autoScroll]);
 
@@ -38,30 +44,28 @@ export function LogPanel() {
     }
   }
 
-  // Demo Magic: Highlight the hardware gatekeeping steps
   function isHardwarePause(message: string): boolean {
     const msg = message.toLowerCase();
-    return msg.includes("waiting") || msg.includes("verify") || msg.includes("approve");
+    return msg.includes("waiting") || msg.includes("verify") || msg.includes("approve") || msg.includes("sign");
   }
 
   function levelColor(log: LogEntry): string {
-    // Override colors if the system is waiting for the Ledger device
     if (isHardwarePause(log.message)) {
-      return "text-amber-400 font-bold animate-pulse tracking-wide";
+      return "text-amber-400 font-bold bg-amber-400/10 px-1 rounded animate-pulse tracking-wide border border-amber-400/20";
     }
 
     switch (log.level) {
       case "info": return "text-blue-400";
-      case "success": return "text-green-400";
+      case "success": return "text-green-400 font-medium";
       case "warn": return "text-yellow-400";
-      case "error": return "text-red-500 font-bold";
+      case "error": return "text-red-500 font-bold bg-red-500/10 px-1 rounded";
       default: return "text-gray-400";
     }
   }
 
   function formatTime(ts: string): string {
     const date = new Date(ts);
-    return date.toISOString().substring(11, 19); // Returns HH:MM:SS format
+    return date.toISOString().substring(11, 19); 
   }
 
   return (
@@ -74,7 +78,7 @@ export function LogPanel() {
           className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded border ${
             autoScroll 
               ? "bg-indigo-600/20 text-indigo-400 border-indigo-600/30" 
-              : "bg-gray-800/50 text-gray-500 border-gray-700"
+              : "bg-gray-800/50 text-gray-500 border-gray-700 hover:text-white"
           }`}
         >
           Auto-scroll: {autoScroll ? 'ON' : 'OFF'}
@@ -87,8 +91,8 @@ export function LogPanel() {
         </button>
       </div>
 
-      {/* Terminal Log Output */}
-      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+      {/* 3. We attach the ref directly to the overflow-y-auto container */}
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 custom-scrollbar">
         {logs.length === 0 && (
           <div className="text-gray-600 italic animate-pulse">Waiting for execution triggers...</div>
         )}
@@ -106,7 +110,7 @@ export function LogPanel() {
             </span>
           </div>
         ))}
-        <div ref={bottomRef} className="h-4" />
+        {/* We no longer need the dummy bottomRef div down here! */}
       </div>
     </div>
   );

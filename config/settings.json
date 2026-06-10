@@ -1,6 +1,6 @@
 {
   "dca": {
-    "intervalHours": 24,
+    "intervalHours": 1,
     "maxAmountUsdc": 50,
     "sourceToken": "USDC",
     "targetToken": "ETH",

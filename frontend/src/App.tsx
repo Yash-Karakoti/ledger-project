@@ -58,20 +58,21 @@ export default function App() {
       </header>
 
       {/* Main Content */}
+      {/* FIXED: Changed py-60 to py-6 to resolve the squeezed panel layouts */}
       <main className="flex-1 px-6 py-6 overflow-hidden">
         <div className="max-w-[1600px] mx-auto h-full">
           {activeTab === "dashboard" ? (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-140px)]">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 h-[calc(100vh-120px)]">
               
               {/* Left Column: Execution Controls & Intelligence */}
-              <div className="lg:col-span-4 flex flex-col gap-6 overflow-y-auto pr-2 pb-6 custom-scrollbar">
+              <div className="xl:col-span-4 flex flex-col gap-6 overflow-y-auto pr-2 pb-6 custom-scrollbar">
                 <DcaPanel />
-                <DevicePanel />
                 <MarketPanel />
+                <DevicePanel />
               </div>
 
               {/* Right Column: Live Terminal Audit */}
-              <div className="lg:col-span-8 h-full flex flex-col">
+              <div className="xl:col-span-8 h-full flex flex-col pb-6">
                 <div className="bg-black border border-gray-800 rounded-xl overflow-hidden shadow-2xl flex flex-col h-full relative">
                   {/* Terminal Header */}
                   <div className="bg-[#111111] border-b border-gray-800 px-4 py-2 flex items-center space-x-2">
@@ -82,7 +83,6 @@ export default function App() {
                   </div>
                   {/* Terminal Content wrapper */}
                   <div className="flex-1 overflow-hidden relative">
-                    {/* Ensure your LogPanel component expands to fill this space */}
                     <LogPanel />
                   </div>
                 </div>
