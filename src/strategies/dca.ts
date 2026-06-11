@@ -182,7 +182,7 @@ export async function executeDca(bridge?: LedgerBridge, force = false): Promise<
     const provider = new ethers.JsonRpcProvider(process.env.RPC_URL || "https://ethereum-sepolia-rpc.publicnode.com");
     
     // Get sender address from Ledger to determine nonce
-    const addressInfo = await bridge.getAddress();
+    const addressInfo = await bridge.getAddress(undefined, false);
     const nonce = await provider.getTransactionCount(addressInfo.address);
 
     // 2. Construct the Unsigned Transaction (Mock ETH Transfer for Hackathon Proof)

@@ -1,7 +1,7 @@
 {
   "dca": {
     "intervalHours": 1,
-    "maxAmountUsdc": 50,
+    "maxAmountUsdc": 26,
     "sourceToken": "USDC",
     "targetToken": "ETH",
     "chain": "ethereum",

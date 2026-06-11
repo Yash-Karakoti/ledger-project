@@ -62,8 +62,10 @@ router.put("/config", (req: Request, res: Response) => {
  */
 router.post("/execute", async (_req: Request, res: Response) => {
   try {
-    // FIXED: Get the active Ledger bridge and force execution (bypass time lock)
     const bridge = getBridge();
+    
+    await bridge.discoverAndConnect();
+
     const report = await executeDca(bridge, true);
 
     const persisted = recordExecution({

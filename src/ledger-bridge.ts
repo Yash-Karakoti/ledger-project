@@ -81,16 +81,21 @@ export class LedgerBridge {
   /**
    * Discover and connect to a Ledger device (Node/CLI pattern).
    */
-  async discoverAndConnect(): Promise<DeviceInfo> {
+    async discoverAndConnect(): Promise<DeviceInfo> {
+    // 1. ADD THIS CHECK: Prevent duplicate sessions from React Strict Mode
+    if (this.deviceInfo) {
+      console.log(`[LedgerBridge] ♻️ Reusing existing session: ${this.deviceInfo.sessionId}`);
+      return this.deviceInfo;
+    }
+
     console.log("\n[LedgerBridge] 🔍 Discovering Ledger device...");
 
     try {
-      // In Node.js/CLI contexts, we use listenToAvailableDevices instead of startDiscovering
       const devices = await firstValueFrom(
         this.dmk.listenToAvailableDevices({}).pipe(
           filter((list: unknown) => Array.isArray(list) && list.length > 0),
           take(1),
-          timeout(10000) // 10 second timeout
+          timeout(10000)
         ),
       ) as Array<{ id: string; name?: string; transport: string }>;
 
@@ -98,7 +103,12 @@ export class LedgerBridge {
 
       console.log(`[LedgerBridge] ✅ Device found: ${device.name ?? "Ledger Device"} (ID: ${device.id})`);
 
-      const sessionId = await this.dmk.connect({ device }) as string;
+      // 2. KEEP THIS FROM THE PREVIOUS FIX: Disable the background refresher
+      const sessionId = await this.dmk.connect({ 
+        device,
+        sessionRefresherOptions: { isRefresherDisabled: true }
+      }) as string;
+      
       console.log(`[LedgerBridge] 🔗 Session established: ${sessionId}`);
 
       this.deviceInfo = {

@@ -12,7 +12,7 @@ export function LogPanel() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [autoScroll, setAutoScroll] = useState(true);
   
-  // 1. We change the ref to target the scrollable container, not a bottom element
+  // 1. Target the scrollable container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
@@ -24,14 +24,17 @@ export function LogPanel() {
     };
   }, []);
 
-  // 2. We use container.scrollTo() to STRICTLY trap the scroll inside the terminal
+  // 2. FIXED: Wrapped in a setTimeout to guarantee the DOM has updated the scrollHeight
   useEffect(() => {
     if (autoScroll && scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      container.scrollTo({
-        top: container.scrollHeight,
-        behavior: "smooth",
-      });
+      
+      setTimeout(() => {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: "smooth", // Change to "auto" if you want it to snap instantly instead of gliding
+        });
+      }, 100); // 100ms delay ensures the new log line is painted before calculating height
     }
   }, [logs, autoScroll]);
 
@@ -69,7 +72,7 @@ export function LogPanel() {
   }
 
   return (
-    <div className="relative h-full w-full bg-black flex flex-col font-mono text-[13px] leading-relaxed">
+    <div className="absolute inset-0 bg-black flex flex-col font-mono text-[13px] leading-relaxed">
       
       {/* Floating Controls inside the Terminal */}
       <div className="absolute top-2 right-4 flex gap-2 z-10 opacity-50 hover:opacity-100 transition-opacity">
@@ -91,8 +94,8 @@ export function LogPanel() {
         </button>
       </div>
 
-      {/* 3. We attach the ref directly to the overflow-y-auto container */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+      {/* 3. The isolated scrollbar container */}
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 custom-scrollbar pb-10">
         {logs.length === 0 && (
           <div className="text-gray-600 italic animate-pulse">Waiting for execution triggers...</div>
         )}
@@ -110,7 +113,6 @@ export function LogPanel() {
             </span>
           </div>
         ))}
-        {/* We no longer need the dummy bottomRef div down here! */}
       </div>
     </div>
   );
