@@ -296,14 +296,6 @@ With the backend running:
 - **Human Verification**: The device screen (real or emulated) displays the exact transaction for user approval before signing.
 - **Deterministic Guardrails**: The config enforces `maxAmountUsdc` and `intervalHours` — the agent cannot exceed these limits.
 
-## Submission Requirements
-
-To qualify for the competition:
-1. ✅ **Built with Ledger Agent Stack** — DMK integration in `src/ledger-bridge.ts`
-2. ✅ **Post on X or LinkedIn** — Tag @Ledger with #Sponsored or #LedgerSponsor
-3. ✅ **Proof of DMK/Wallet CLI usage** — Commands above or public repo link
-4. ✅ **Submit via official form** — Include repo link, post URL, and screenshots
-
 ---
 
 ## License
