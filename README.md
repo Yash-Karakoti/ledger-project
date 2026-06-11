@@ -1,4 +1,4 @@
-# Ledger DCA Agent - Hardware-Secured Dollar Cost Averaging
+# Ledger DCA Agent - Hardware Secured Dollar Cost Averaging
 
 > An autonomous DCA (Dollar Cost Averaging) agent that swaps USDC for ETH using Ledger's **Device Management Kit (DMK)** for hardware-enforced signing. The AI agent analyzes markets and assembles transactions, but has **zero access to the private key** — the Ledger device (or Speculos emulator) is the only signing authority.
 >
